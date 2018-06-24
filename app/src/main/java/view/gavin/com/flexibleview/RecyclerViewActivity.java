@@ -26,7 +26,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recycler_view);
-        RecyclerView recyclerView = findViewById(R.id.rv);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
         View header = LayoutInflater.from(this).inflate(R.layout.header, null);
         View headerImage = header.findViewById(R.id.iv);
 
@@ -41,7 +41,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
 
-        FlexibleLayout flexibleLayout = findViewById(R.id.fv);
+        FlexibleLayout flexibleLayout = (FlexibleLayout) findViewById(R.id.fv);
         flexibleLayout.setReadyListener(new OnReadyPullListener() {
             @Override
             public boolean isReady() {

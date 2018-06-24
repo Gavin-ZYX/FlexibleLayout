@@ -60,9 +60,9 @@ public class ScrollViewActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        mFlexibleLayout = findViewById(R.id.ffv);
+        mFlexibleLayout = (FlexibleLayout) findViewById(R.id.ffv);
         mHeader = findViewById(R.id.header);
-        mScrollView = findViewById(R.id.sv);
+        mScrollView = (ScrollView) findViewById(R.id.sv);
         mRefreshView = LayoutInflater.from(this).inflate(R.layout.refresh_layout, null);
     }
 }

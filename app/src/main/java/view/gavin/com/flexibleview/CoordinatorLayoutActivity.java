@@ -26,7 +26,7 @@ public class CoordinatorLayoutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_coordinator_layout);
 
         View header = findViewById(R.id.iv);
-        RecyclerView recyclerView = findViewById(R.id.rv);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.rv);
 
         List<String> list = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
@@ -38,7 +38,7 @@ public class CoordinatorLayoutActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
 
-        FlexibleLayout flexibleLayout = findViewById(R.id.fv);
+        FlexibleLayout flexibleLayout = (FlexibleLayout) findViewById(R.id.fv);
         flexibleLayout.setReadyListener(new OnReadyPullListener() {
             @Override
             public boolean isReady() {

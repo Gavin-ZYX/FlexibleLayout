@@ -4,6 +4,7 @@
 
 
 ## 支持
+- 下拉刷新
 - ScrollView
 - RecyclerView
 - CoordinatorLayout
