@@ -4,12 +4,17 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.gavin.view.flexible.callback.OnPullListener;
 import com.gavin.view.flexible.callback.OnReadyPullListener;
+import com.gavin.view.flexible.callback.OnRefreshListener;
 import com.gavin.view.flexible.util.PullAnimatorUtil;
 
 /**
@@ -17,12 +22,17 @@ import com.gavin.view.flexible.util.PullAnimatorUtil;
  * date 2018/6/12
  * 带有下拉放大效果的FrameLayout
  */
-public class FlexibleLayout extends LinearLayout implements IFlexible {
+public class FlexibleLayout extends FrameLayout implements IFlexible {
 
     /**
      * 是否允许下拉放大
      */
     private boolean isEnable = true;
+
+    /**
+     * 是否允许下拉刷新
+     */
+    private boolean isRefreshable = false;
 
     /**
      * 头部高度
@@ -45,9 +55,24 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
     private View mHeaderView;
 
     /**
-     * 最大下拉高度
+     * 刷新
      */
-    private int mMaxPullHeight = 200;
+    private View mRefreshView;
+
+    /**
+     * 刷新View的宽高
+     */
+    private int mRefreshSize = getScreenWidth() / 15;
+
+    /**
+     * 最大头部下拉高度
+     */
+    private int mMaxPullHeight = getScreenWidth() / 3;
+
+    /**
+     * 最大 刷新 下拉高度
+     */
+    private int mMaxRefreshPullHeight = getScreenWidth() / 3;
 
     /**
      * true 开始下拽
@@ -58,6 +83,11 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
      * 准备下拉监听
      */
     private OnReadyPullListener mListener;
+
+    /**
+     * 刷新监听
+     */
+    private OnRefreshListener mRefreshListener;
 
     /**
      * 初始坐标
@@ -124,6 +154,7 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
                     if (mIsBeingDragged) {
                         float diffY = ev.getY() - mInitialY;
                         changeHeader((int) diffY);
+                        changeRefreshView((int) diffY);
                         if (mOnPullListener != null) {
                             mOnPullListener.onPull((int) diffY);
                         }
@@ -138,6 +169,9 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
                         if (mOnPullListener != null) {
                             mOnPullListener.onRelease();
                         }
+                        //刷新操作
+                        float diffY = ev.getY() - mInitialY;
+                        changeRefreshViewOnActionUp((int) diffY);
                         return true;
                     }
                     break;
@@ -166,6 +200,36 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
         PullAnimatorUtil.resetAnimator(mHeaderView, mHeaderHeight, mHeaderWidth);
     }
 
+    @Override
+    public void changeRefreshView(int offsetY) {
+        if (!isRefreshable || mRefreshView == null) {
+            return;
+        }
+        PullAnimatorUtil.pullRefreshAnimator(mRefreshView, offsetY, mRefreshSize, mMaxRefreshPullHeight);
+    }
+
+    @Override
+    public void changeRefreshViewOnActionUp(int offsetY) {
+        if (!isRefreshable || mRefreshView == null) {
+            return;
+        }
+        if (offsetY > mMaxRefreshPullHeight) {
+            PullAnimatorUtil.onRefreshing(mRefreshView);
+            if (mRefreshListener != null) {
+                mRefreshListener.onRefreshing();
+            }
+        } else {
+            PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize);
+        }
+    }
+
+    @Override
+    public void onRefreshComplete() {
+        if (!isRefreshable || mRefreshView == null) {
+            return;
+        }
+        PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize);
+    }
 
     /**
      * 是否允许下拉放大
@@ -175,6 +239,17 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
      */
     public FlexibleLayout setEnable(boolean isEnable) {
         this.isEnable = isEnable;
+        return this;
+    }
+
+    /**
+     * 是否允许下拉刷新
+     *
+     * @param isEnable
+     * @return
+     */
+    public FlexibleLayout setRefreshable(boolean isEnable) {
+        this.isRefreshable = isEnable;
         return this;
     }
 
@@ -198,7 +273,7 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
     }
 
     /**
-     * 最大下拉高度
+     * Header最大下拉高度
      *
      * @param height
      * @return
@@ -206,6 +281,61 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
     public FlexibleLayout setMaxPullHeight(int height) {
         mMaxPullHeight = height;
         return this;
+    }
+
+    /**
+     * 刷新控件 最大下拉高度
+     *
+     * @param height
+     * @return
+     */
+    public FlexibleLayout setMaxRefreshPullHeight(int height) {
+        mMaxRefreshPullHeight = height;
+        return this;
+    }
+
+    /**
+     * 设置刷新View的尺寸（正方形）
+     *
+     * @param size
+     * @return
+     */
+    public FlexibleLayout setRefreshSize(int size) {
+        mRefreshSize = size;
+        return this;
+    }
+
+    /**
+     * 设置刷新View
+     *
+     * @param refreshView
+     * @param listener
+     * @return
+     */
+    public FlexibleLayout setRefreshView(View refreshView, OnRefreshListener listener) {
+        if (mRefreshView != null) {
+            removeView(mRefreshView);
+        }
+        mRefreshView = refreshView;
+        mRefreshListener = listener;
+        FrameLayout.LayoutParams layoutParams = new LayoutParams(mRefreshSize, mRefreshSize);
+        layoutParams.gravity = Gravity.CENTER_HORIZONTAL;
+        mRefreshView.setLayoutParams(layoutParams);
+        mRefreshView.setTranslationY(-mRefreshSize);
+        addView(mRefreshView);
+        return this;
+    }
+
+    /**
+     * 设置默认的刷新头
+     *
+     * @param listener
+     * @return
+     */
+    public FlexibleLayout setDefaultRefreshView(OnRefreshListener listener) {
+        ImageView refreshView = new ImageView(getContext());
+        refreshView.setImageResource(R.drawable.flexible_loading);
+        return setRefreshView(refreshView, listener);
     }
 
     /**
@@ -228,6 +358,22 @@ public class FlexibleLayout extends LinearLayout implements IFlexible {
     public FlexibleLayout setOnPullListener(OnPullListener onPullListener) {
         mOnPullListener = onPullListener;
         return this;
+    }
+
+    /**
+     * 获取屏幕宽度
+     *
+     * @return
+     */
+    private int getScreenWidth() {
+        WindowManager mWindowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics metrics = new DisplayMetrics();
+        if (mWindowManager != null) {
+            mWindowManager.getDefaultDisplay().getMetrics(metrics);
+            return metrics.widthPixels;
+        } else {
+            return 300;
+        }
     }
 
     private void log(String str) {

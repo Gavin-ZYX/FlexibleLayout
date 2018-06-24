@@ -1,9 +1,11 @@
 package com.gavin.view.flexible.util;
 
 import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 
 /**
  * Created by gavin
@@ -44,7 +46,7 @@ public class PullAnimatorUtil {
         heightAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                int height = (int)animation.getAnimatedValue();
+                int height = (int) animation.getAnimatedValue();
                 headerView.getLayoutParams().height = height;
             }
         });
@@ -52,7 +54,7 @@ public class PullAnimatorUtil {
         widthAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                int width = (int)animation.getAnimatedValue();
+                int width = (int) animation.getAnimatedValue();
                 headerView.getLayoutParams().width = width;
             }
         });
@@ -60,7 +62,7 @@ public class PullAnimatorUtil {
         translationAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                int translation = (int)animation.getAnimatedValue();
+                int translation = (int) animation.getAnimatedValue();
                 headerView.setTranslationX(translation);
                 headerView.requestLayout();
             }
@@ -73,4 +75,54 @@ public class PullAnimatorUtil {
 
     }
 
+    /**
+     * 下拉时 刷新控件动画
+     *
+     * @param refreshView
+     * @param offsetY
+     * @param refreshViewHeight
+     * @param maxRefreshPullHeight
+     */
+    public static void pullRefreshAnimator(View refreshView, int offsetY, int refreshViewHeight, int maxRefreshPullHeight) {
+        if (refreshView == null) {
+            return;
+        }
+        int pullOffset = (int) Math.pow(offsetY, 0.9);
+        int newHeight = Math.min(maxRefreshPullHeight, pullOffset);
+        refreshView.setTranslationY(-refreshViewHeight + newHeight);
+        refreshView.setRotation(pullOffset);
+        refreshView.requestLayout();
+    }
+
+    private static ObjectAnimator mRefreshingAnimator;
+
+    /**
+     * 刷新动画
+     * 一直转圈圈
+     * @param refreshView
+     */
+    public static void onRefreshing(View refreshView) {
+        float rotation = refreshView.getRotation();
+        mRefreshingAnimator = ObjectAnimator.ofFloat(refreshView, "rotation", rotation, rotation + 360);
+        mRefreshingAnimator.setDuration(1000);
+        mRefreshingAnimator.setInterpolator(new LinearInterpolator());
+        mRefreshingAnimator.setRepeatMode(ValueAnimator.RESTART);
+        mRefreshingAnimator.setRepeatCount(-1);
+        mRefreshingAnimator.start();
+    }
+
+    /**
+     * 重置刷新动画
+     * @param refreshView
+     * @param refreshViewHeight
+     */
+    public static void resetRefreshView(View refreshView, int refreshViewHeight) {
+        if (mRefreshingAnimator != null) {
+            mRefreshingAnimator.cancel();
+        }
+        float translation = refreshView.getTranslationY();
+        ObjectAnimator animator = ObjectAnimator.ofFloat(refreshView, "translationY", translation, -refreshViewHeight);
+        animator.setDuration(500);
+        animator.start();
+    }
 }

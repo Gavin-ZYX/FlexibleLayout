@@ -3,11 +3,13 @@ package view.gavin.com.flexibleview;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ScrollView;
 
 import com.gavin.view.flexible.FlexibleLayout;
 import com.gavin.view.flexible.callback.OnReadyPullListener;
+import com.gavin.view.flexible.callback.OnRefreshListener;
 
 /**
  * Created by gavin
@@ -15,9 +17,10 @@ import com.gavin.view.flexible.callback.OnReadyPullListener;
  */
 public class ScrollViewActivity extends AppCompatActivity {
 
-    private ImageView mHeader;
+    private View mHeader;
     private ScrollView mScrollView;
     private FlexibleLayout mFlexibleLayout;
+    private View mRefreshView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -30,12 +33,36 @@ public class ScrollViewActivity extends AppCompatActivity {
                     public boolean isReady() {
                         return mScrollView.getScrollY() == 0;
                     }
+                })
+                .setRefreshable(true)
+                .setDefaultRefreshView(new OnRefreshListener() {
+                    @Override
+                    public void onRefreshing() {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Thread.sleep(2000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                //刷新完成后需要调用onRefreshComplete()通知FlexibleLayout
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mFlexibleLayout.onRefreshComplete();
+                                    }
+                                });
+                            }
+                        }).start();
+                    }
                 });
     }
 
     private void initView() {
-        mFlexibleLayout =findViewById(R.id.ffv);
-        mHeader = findViewById(R.id.iv_header);
+        mFlexibleLayout = findViewById(R.id.ffv);
+        mHeader = findViewById(R.id.header);
         mScrollView = findViewById(R.id.sv);
+        mRefreshView = LayoutInflater.from(this).inflate(R.layout.refresh_layout, null);
     }
 }
