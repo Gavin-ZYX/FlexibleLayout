@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.RelativeLayout;
 
 /**
  * Created by gavin
@@ -22,12 +23,15 @@ public class PullAnimatorUtil {
         if (headerView == null) {
             return;
         }
-        int pullOffset = (int) Math.pow(offsetY, 0.9);
+        int pullOffset = (int) Math.pow(offsetY, 0.8);
         int newHeight = Math.min(maxHeight + headerHeight, pullOffset + headerHeight);
         int newWidth = (int) ((((float) newHeight / headerHeight)) * headerWidth);
         headerView.getLayoutParams().height = newHeight;
         headerView.getLayoutParams().width = newWidth;
         int margin = (newWidth - headerWidth) / 2;
+        if (headerView.getParent() instanceof RelativeLayout) {
+            margin = 0;
+        }
         headerView.setTranslationX(-margin);
         headerView.requestLayout();
     }
@@ -99,6 +103,7 @@ public class PullAnimatorUtil {
     /**
      * 刷新动画
      * 一直转圈圈
+     *
      * @param refreshView
      */
     public static void onRefreshing(View refreshView) {
@@ -113,6 +118,7 @@ public class PullAnimatorUtil {
 
     /**
      * 重置刷新动画
+     *
      * @param refreshView
      * @param refreshViewHeight
      */

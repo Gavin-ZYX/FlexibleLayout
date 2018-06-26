@@ -21,7 +21,7 @@ android {
 
 dependencies {
     compile rootProject.ext.dependencies['appcompat-v7']
-    compile 'com.gavin.view.flexible:library:1.0.0'
+    compile project(':library')
     compile rootProject.ext.dependencies['recyclerview-v7']
     compile rootProject.ext.dependencies['design']
 }

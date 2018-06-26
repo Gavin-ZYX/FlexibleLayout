@@ -13,7 +13,9 @@
 
 **依赖**
 
-> compile 'com.gavin.view.flexible:library:1.0.0'
+```gradle
+compile 'com.gavin.view.flexible:library:1.0.0'
+```
 
 **xml**(ScrollView)
 
