@@ -32,7 +32,7 @@ dependencies {
 //gradle install
 //gradle bintrayUpload
 
-version = "1.0.1"    //这个是版本号，必须填写
+version = "1.0.2"    //这个是版本号，必须填写
 def siteUrl = 'https://github.com/Gavin-ZYX/FlexibleLayout' // 项目的主页
 def gitUrl = 'https://github.com/Gavin-ZYX/FlexibleLayout' // Git仓库的
 group = "com.gavin.view.flexible" // 这里是groupId ,必须填写  一般填你唯一的包名

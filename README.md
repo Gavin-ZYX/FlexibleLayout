@@ -14,7 +14,7 @@
 **依赖**
 
 ```gradle
-compile 'com.gavin.view.flexible:library:1.0.1'
+compile 'com.gavin.view.flexible:library:1.0.2'
 ```
 
 **xml**(ScrollView)
@@ -90,6 +90,7 @@ mFlexibleLayout.setHeader(mHeader)
 | setRefreshable(boolean isEnable) | 是否允许下拉刷新 | false |
 | setMaxRefreshPullHeight(int height) | 刷新View最大下拉高度 | 1/3屏幕宽度 |
 | setRefreshSize(int size) | 刷新View的尺寸（正方形）| 1/15屏幕宽度 |
+| isRefreshing() | 是否正在刷新|  |
 
 
 **监听**

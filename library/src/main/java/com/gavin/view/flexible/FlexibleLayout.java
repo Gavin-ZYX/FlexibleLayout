@@ -1,5 +1,7 @@
 package com.gavin.view.flexible;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -80,6 +82,11 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
     private boolean mIsBeingDragged;
 
     /**
+     * 标志：正在刷新
+     */
+    private boolean mIsRefreshing;
+
+    /**
      * 准备下拉监听
      */
     private OnReadyPullListener mListener;
@@ -99,6 +106,11 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
      */
     private OnPullListener mOnPullListener;
 
+    /**
+     * 刷新动画消失监听
+     */
+    private RefreshAnimatorListener mRefreshAnimatorListener = new RefreshAnimatorListener();
+
     public FlexibleLayout(@NonNull Context context) {
         this(context, null);
     }
@@ -113,6 +125,7 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
     }
 
     private void init() {
+        mIsRefreshing = false;
         mHeaderSizeReady = false;
     }
 
@@ -202,7 +215,7 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
 
     @Override
     public void changeRefreshView(int offsetY) {
-        if (!isRefreshable || mRefreshView == null) {
+        if (!isRefreshable || mRefreshView == null || isRefreshing()) {
             return;
         }
         PullAnimatorUtil.pullRefreshAnimator(mRefreshView, offsetY, mRefreshSize, mMaxRefreshPullHeight);
@@ -210,16 +223,17 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
 
     @Override
     public void changeRefreshViewOnActionUp(int offsetY) {
-        if (!isRefreshable || mRefreshView == null) {
+        if (!isRefreshable || mRefreshView == null || isRefreshing()) {
             return;
         }
+        mIsRefreshing = true;
         if (offsetY > mMaxRefreshPullHeight) {
             PullAnimatorUtil.onRefreshing(mRefreshView);
             if (mRefreshListener != null) {
                 mRefreshListener.onRefreshing();
             }
         } else {
-            PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize);
+            PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize, mRefreshAnimatorListener);
         }
     }
 
@@ -228,7 +242,13 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
         if (!isRefreshable || mRefreshView == null) {
             return;
         }
-        PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize);
+        PullAnimatorUtil.resetRefreshView(mRefreshView, mRefreshSize, mRefreshAnimatorListener);
+    }
+
+
+    @Override
+    public boolean isRefreshing() {
+        return mIsRefreshing;
     }
 
     /**
@@ -378,5 +398,19 @@ public class FlexibleLayout extends FrameLayout implements IFlexible {
 
     private void log(String str) {
         //Log.i("FlexibleView", str);
+    }
+
+    class RefreshAnimatorListener extends AnimatorListenerAdapter {
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            mIsRefreshing = false;
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            super.onAnimationCancel(animation);
+            mIsRefreshing = false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.gavin.view.flexible.util;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
@@ -29,7 +30,9 @@ public class PullAnimatorUtil {
         headerView.getLayoutParams().height = newHeight;
         headerView.getLayoutParams().width = newWidth;
         int margin = (newWidth - headerWidth) / 2;
-        if (headerView.getParent() instanceof RelativeLayout) {
+        if (headerView.getParent() != null
+                && headerView.getParent() instanceof RelativeLayout) {
+            // TODO: gavin 2018/6/26  RelativeLayout会有问题，需要查明原因
             margin = 0;
         }
         headerView.setTranslationX(-margin);
@@ -122,13 +125,15 @@ public class PullAnimatorUtil {
      * @param refreshView
      * @param refreshViewHeight
      */
-    public static void resetRefreshView(View refreshView, int refreshViewHeight) {
+    public static void resetRefreshView(View refreshView, int refreshViewHeight, Animator.AnimatorListener animatorListener) {
         if (mRefreshingAnimator != null) {
             mRefreshingAnimator.cancel();
         }
         float translation = refreshView.getTranslationY();
         ObjectAnimator animator = ObjectAnimator.ofFloat(refreshView, "translationY", translation, -refreshViewHeight);
         animator.setDuration(500);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.addListener(animatorListener);
         animator.start();
     }
 }
